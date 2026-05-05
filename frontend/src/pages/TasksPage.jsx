@@ -66,8 +66,7 @@ export default function TasksPage() {
   };
 
   const panelClass = (panel) =>
-    `rounded-lg transition ${
-      draggingPanel && draggingPanel !== panel ? "ring-2 ring-primary/30 ring-offset-2 ring-offset-background" : ""
+    `rounded-lg transition ${draggingPanel && draggingPanel !== panel ? "ring-2 ring-primary/30 ring-offset-2 ring-offset-background" : ""
     }`;
 
   const plannerPanel = (
@@ -145,7 +144,7 @@ export default function TasksPage() {
   };
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 mb-6">
       <section className="overflow-hidden rounded-lg border bg-card shadow-soft">
         <div className="grid gap-6 bg-gradient-to-br from-primary/10 via-background to-accent/10 p-6 sm:p-8 lg:grid-cols-[1fr_auto] lg:items-center">
           <div>
@@ -183,9 +182,8 @@ export default function TasksPage() {
       </section>
 
       <div
-        className={`grid gap-6 ${
-          panelOrder[0] === "planner" ? "xl:grid-cols-[380px_1fr]" : "xl:grid-cols-[1fr_380px]"
-        }`}
+        className={`grid gap-6 ${panelOrder[0] === "planner" ? "xl:grid-cols-[380px_1fr]" : "xl:grid-cols-[1fr_380px]"
+          }`}
       >
         {panelOrder.map((panel) => panels[panel])}
       </div>
