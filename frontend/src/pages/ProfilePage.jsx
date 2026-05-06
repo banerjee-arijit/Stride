@@ -71,7 +71,7 @@ export default function ProfilePage() {
   useEffect(() => {
     refreshProfile()
       .then((data) => setStats(data.stats))
-      .catch(() => {});
+      .catch(() => { });
   }, []);
 
   useEffect(() => {
@@ -303,7 +303,7 @@ export default function ProfilePage() {
         }}
       >
         <DialogContent className="left-0 top-0 h-screen w-screen max-w-none translate-x-0 translate-y-0 rounded-none border-0 bg-background p-0">
-          <div className="relative flex h-full flex-col overflow-hidden bg-[radial-gradient(circle_at_top_left,_rgba(31,118,111,0.14),_transparent_26%),radial-gradient(circle_at_top_right,_rgba(245,158,11,0.14),_transparent_22%),linear-gradient(180deg,_rgba(255,255,255,0.96),_rgba(247,250,248,0.98))] dark:bg-[radial-gradient(circle_at_top_left,_rgba(31,118,111,0.2),_transparent_24%),radial-gradient(circle_at_top_right,_rgba(245,158,11,0.16),_transparent_20%),linear-gradient(180deg,_rgba(10,15,18,0.98),_rgba(9,13,17,1))]">
+          <div className="relative flex h-full flex-col overflow-hidden bg-[radial-gradient(circle_at_top_left,_rgba(31,118,111,0.08),_transparent_24%),radial-gradient(circle_at_top_right,_rgba(245,158,11,0.08),_transparent_20%)]">
             {celebrate && (
               <div className="pointer-events-none absolute inset-0 z-20 overflow-hidden">
                 {[
@@ -331,7 +331,7 @@ export default function ProfilePage() {
               <p className="text-sm font-medium text-muted-foreground">Pledge space</p>
             </div>
 
-            <div className="mx-auto flex w-full max-w-5xl flex-1 flex-col overflow-y-auto px-6 py-10 sm:px-10">
+            <div className="mx-auto flex w-full max-w-4xl flex-1 flex-col overflow-y-auto px-6 py-10 sm:px-10">
               <div className="mx-auto max-w-3xl text-center">
                 <p className="text-sm uppercase tracking-[0.2em] text-primary/80">100 Rewards cycle</p>
                 <h2 className="mt-4 text-lg font-semibold tracking-tight text-foreground sm:text-xl">
@@ -339,33 +339,28 @@ export default function ProfilePage() {
                 </h2>
               </div>
 
-              <div className="mx-auto mt-10 w-full max-w-4xl text-center text-base font-medium leading-8 text-muted-foreground sm:text-xl">
+              <div className="mx-auto mt-10 w-full max-w-3xl text-center text-base font-medium leading-8 text-muted-foreground sm:text-lg">
                 I pledge that only after completing my tasks and reaching 100 Rewards
               </div>
 
-              <div className="mx-auto mt-8 w-full max-w-4xl rounded-[2rem] border border-border/60 bg-background/70 p-6 shadow-[0_20px_60px_rgba(15,23,42,0.08)] backdrop-blur dark:bg-background/40">
+              <div className="mx-auto mt-8 w-full max-w-3xl rounded-3xl bg-background/90 px-6 py-8 shadow-sm">
                 <textarea
                   value={reward}
                   onChange={(event) => setReward(event.target.value)}
                   placeholder="I will watch a movie by myself, take a short trip, buy that book, or do something I genuinely care about."
-                  className="min-h-[260px] w-full resize-none border-0 bg-transparent text-center text-4xl font-bold leading-[1.2] tracking-tight outline-none placeholder:text-muted-foreground/28 sm:min-h-[300px] sm:text-6xl"
+                  className="min-h-[240px] w-full resize-none border-0 bg-transparent text-center text-3xl font-semibold leading-[1.25] tracking-tight outline-none placeholder:text-muted-foreground/30 sm:min-h-[260px] sm:text-5xl"
                 />
               </div>
 
-              <div className="sticky bottom-0 mx-auto mt-8 w-full max-w-4xl pb-6 pt-6">
+              <div className="sticky bottom-0 mx-auto mt-6 w-full max-w-3xl bg-gradient-to-t from-background via-background/95 to-transparent pb-6 pt-8">
                 <div className="mx-auto flex w-fit flex-col items-center">
-                  <p className="mb-3 text-xs uppercase tracking-[0.18em] text-muted-foreground">
-                    Lock it in when it feels right
-                  </p>
                   <button
                     type="button"
                     disabled={!reward.trim() || savingReward}
                     onClick={() => setConfirmOpen(true)}
-                    className="group relative rounded-full px-10 py-4 text-center transition disabled:cursor-not-allowed disabled:opacity-30"
+                    className="group relative rounded-full border border-border bg-background px-8 py-3 text-center shadow-sm transition hover:border-primary/20 hover:bg-muted/30 disabled:cursor-not-allowed disabled:opacity-30"
                   >
-                    <span className="absolute inset-0 rounded-full bg-[radial-gradient(circle_at_top_left,_rgba(31,118,111,0.25),_transparent_50%),radial-gradient(circle_at_bottom_right,_rgba(245,158,11,0.22),_transparent_45%)] blur-xl transition group-hover:opacity-80" />
-                    <span className="absolute inset-0 rounded-full border border-primary/15 bg-background/80 backdrop-blur" />
-                    <span className="relative text-2xl font-semibold tracking-[0.18em] text-primary transition group-hover:scale-105">
+                    <span className="relative text-lg font-semibold tracking-[0.18em] text-primary transition group-hover:scale-[1.02]">
                       {savingReward ? "COMMITTING" : "COMMIT"}
                     </span>
                   </button>
@@ -429,11 +424,10 @@ export default function ProfilePage() {
                       key={reason}
                       type="button"
                       onClick={() => setDeleteReason(reason)}
-                      className={`rounded-full border px-4 py-2 text-sm transition ${
-                        deleteReason === reason
+                      className={`rounded-full border px-4 py-2 text-sm transition ${deleteReason === reason
                           ? "border-destructive/40 bg-destructive/10 text-destructive"
                           : "border-border bg-background text-muted-foreground hover:border-destructive/20 hover:text-foreground"
-                      }`}
+                        }`}
                     >
                       {reason}
                     </button>
@@ -449,11 +443,10 @@ export default function ProfilePage() {
                       key={item.value}
                       type="button"
                       onClick={() => setDeleteRating(item.value)}
-                      className={`rounded-2xl border px-3 py-4 text-center transition duration-200 ${
-                        deleteRating === item.value
+                      className={`rounded-2xl border px-3 py-4 text-center transition duration-200 ${deleteRating === item.value
                           ? `${item.activeClass} scale-[1.03] shadow-sm`
                           : "border-border bg-background hover:border-primary/20 hover:bg-muted/40"
-                      }`}
+                        }`}
                       title={item.label}
                     >
                       <div className="relative mx-auto grid h-11 w-11 place-items-center">
