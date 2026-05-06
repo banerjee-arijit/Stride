@@ -1,4 +1,5 @@
 import Task from "../models/Task.js";
+import User from "../models/User.js";
 
 const allowedAvatars = [
   "sunrise",
@@ -59,8 +60,8 @@ export const updateAvatar = async (req, res, next) => {
       return res.status(400).json({ message: "Invalid avatar selected" });
     }
 
+    await User.updateOne({ _id: req.user._id }, { avatar });
     req.user.avatar = avatar;
-    await req.user.save();
 
     res.json({ user: req.user });
   } catch (error) {
