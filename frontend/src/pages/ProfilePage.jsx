@@ -346,10 +346,21 @@ export default function ProfilePage() {
               <div className="mx-auto mt-8 w-full max-w-3xl rounded-3xl bg-background/90 px-6 py-8 shadow-sm">
                 <textarea
                   value={reward}
+                  maxLength={60}
                   onChange={(event) => setReward(event.target.value)}
                   placeholder="I will watch a movie by myself, take a short trip, buy that book, or do something I genuinely care about."
                   className="min-h-[240px] w-full resize-none border-0 bg-transparent text-center text-3xl font-semibold leading-[1.25] tracking-tight outline-none placeholder:text-muted-foreground/30 sm:min-h-[260px] sm:text-5xl"
                 />
+                <div className="mt-4 flex flex-col items-center justify-center gap-1 text-sm font-medium transition-colors">
+                  <span className={reward.length >= 60 ? "text-destructive" : "text-muted-foreground"}>
+                    {reward.length} / 60 characters
+                  </span>
+                  {reward.length >= 60 && (
+                    <span className="text-xs text-destructive/80 animate-in fade-in slide-in-from-bottom-1">
+                      You have reached the character limit for a concise pledge.
+                    </span>
+                  )}
+                </div>
               </div>
 
               <div className="sticky bottom-0 mx-auto mt-6 w-full max-w-3xl bg-gradient-to-t from-background via-background/95 to-transparent pb-6 pt-8">

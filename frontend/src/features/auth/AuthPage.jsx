@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Link, useLocation } from "react-router-dom";
-import { CheckCircle2 } from "lucide-react";
+import { CheckCircle2, Eye, EyeOff } from "lucide-react";
 import { toast } from "sonner";
 import { useAuth } from "../../context/AuthContext";
 import { Button } from "../../components/ui/button";
@@ -11,13 +11,29 @@ export default function AuthPage() {
   const isLogin = useLocation().pathname === "/login";
   const { login, register, loading } = useAuth();
   const [form, setForm] = useState({ name: "", email: "", password: "" });
+  const [showPassword, setShowPassword] = useState(false);
+  const [passwordError, setPasswordError] = useState("");
 
   const handleChange = (event) => {
-    setForm((current) => ({ ...current, [event.target.name]: event.target.value }));
+    const { name, value } = event.target;
+    const nextValue = name === "password" ? value.slice(0, 15) : value;
+
+    setForm((current) => ({ ...current, [name]: nextValue }));
+
+    if (name === "password") {
+      setPasswordError(
+        nextValue && nextValue.length < 6 ? "Password must be at least 6 characters." : ""
+      );
+    }
   };
 
   const handleSubmit = async (event) => {
     event.preventDefault();
+
+    if (form.password.length < 6) {
+      setPasswordError("Password must be at least 6 characters.");
+      return;
+    }
 
     try {
       if (isLogin) {
@@ -80,7 +96,7 @@ export default function AuthPage() {
           <form onSubmit={handleSubmit} className="space-y-5">
             {!isLogin && (
               <div className="space-y-2">
-                <Label htmlFor="name">Name</Label>
+                <Label htmlFor="name">Name <span className="text-destructive">*</span></Label>
                 <Input
                   id="name"
                   name="name"
@@ -93,7 +109,7 @@ export default function AuthPage() {
             )}
 
             <div className="space-y-2">
-              <Label htmlFor="email">Email</Label>
+              <Label htmlFor="email">Email <span className="text-destructive">*</span></Label>
               <Input
                 id="email"
                 name="email"
@@ -106,17 +122,31 @@ export default function AuthPage() {
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="password">Password</Label>
-              <Input
-                id="password"
-                name="password"
-                type="password"
-                value={form.password}
-                onChange={handleChange}
-                minLength={6}
-                required
-                className="h-12 rounded-lg bg-transparent"
-              />
+              <Label htmlFor="password">Password <span className="text-destructive">*</span></Label>
+              <div className="relative">
+                <Input
+                  id="password"
+                  name="password"
+                  type={showPassword ? "text" : "password"}
+                  value={form.password}
+                  onChange={handleChange}
+                  minLength={6}
+                  maxLength={15}
+                  required
+                  className="h-12 rounded-lg bg-transparent pr-12"
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowPassword((current) => !current)}
+                  className="absolute right-3 top-1/2 grid h-8 w-8 -translate-y-1/2 place-items-center rounded-md text-muted-foreground transition hover:bg-muted hover:text-foreground"
+                  aria-label={showPassword ? "Hide password" : "Show password"}
+                >
+                  {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                </button>
+              </div>
+              <p className={passwordError ? "text-sm font-medium text-destructive" : "text-xs text-muted-foreground"}>
+                {passwordError || "Use 6 to 15 characters."}
+              </p>
             </div>
 
             <Button type="submit" className="h-12 w-full rounded-lg" disabled={loading}>

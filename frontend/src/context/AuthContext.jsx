@@ -2,7 +2,7 @@ import { createContext, useContext, useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 import api from "../api/client";
-import { cacheProfile, getCachedProfile } from "../lib/offlineStore";
+import { cacheProfile, clearUserOfflineData, getCachedProfile } from "../lib/offlineStore";
 
 const AuthContext = createContext(null);
 
@@ -14,9 +14,14 @@ export function AuthProvider({ children }) {
   });
   const [loading, setLoading] = useState(false);
 
-  const clearSession = () => {
+  const clearSession = async () => {
+    const userId = user?.id || user?._id;
     localStorage.removeItem("task_tracker_token");
     localStorage.removeItem("task_tracker_user");
+    localStorage.removeItem("stride_task_panel_order");
+    if (userId) {
+      await clearUserOfflineData(userId);
+    }
     setUser(null);
   };
 
@@ -58,8 +63,8 @@ export function AuthProvider({ children }) {
     }
   };
 
-  const logout = () => {
-    clearSession();
+  const logout = async () => {
+    await clearSession();
     navigate("/login");
   };
 
@@ -103,7 +108,7 @@ export function AuthProvider({ children }) {
     setLoading(true);
     try {
       await api.delete("/users/profile", { data: payload });
-      clearSession();
+      await clearSession();
       toast.success("Account deleted");
       navigate("/signing-off", { replace: true });
     } finally {

@@ -64,6 +64,11 @@ export const cacheTasks = async (userId, tasks) => {
   ).catch(() => {});
 };
 
+export const clearCachedTasks = async (userId) => {
+  if (!userId) return;
+  await runStore(TASKS_STORE, "readwrite", (store) => store.delete(userId)).catch(() => {});
+};
+
 export const getCachedProfile = async (userId) => {
   if (!userId) return null;
   const record = await runStore(PROFILES_STORE, "readonly", (store) => store.get(userId)).catch(() => null);
@@ -103,6 +108,16 @@ export const getQueuedActions = async (userId) => {
 export const removeQueuedAction = async (id) => {
   if (!id) return;
   await runStore(QUEUE_STORE, "readwrite", (store) => store.delete(id)).catch(() => {});
+};
+
+export const clearUserOfflineData = async (userId) => {
+  if (!userId) return;
+  const actions = await getQueuedActions(userId);
+  await Promise.all([
+    clearCachedTasks(userId),
+    runStore(PROFILES_STORE, "readwrite", (store) => store.delete(userId)).catch(() => {}),
+    ...actions.map((action) => removeQueuedAction(action.id))
+  ]);
 };
 
 export const filterTasks = (tasks, params = {}) => {

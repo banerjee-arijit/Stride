@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { Check, Sparkles } from "lucide-react";
 import { toast } from "sonner";
@@ -13,12 +13,18 @@ export default function AvatarSelectionPage() {
   const [selectedAvatar, setSelectedAvatar] = useState(user?.avatar || avatarOptions[0].id);
   const [saving, setSaving] = useState(false);
 
+  useEffect(() => {
+    if (user?.avatar && !location.state?.fromProfile) {
+      navigate("/", { replace: true });
+    }
+  }, [user?.avatar, location.state?.fromProfile, navigate]);
+
   const handleSave = async () => {
     setSaving(true);
     try {
       await updateAvatar(selectedAvatar);
       toast.success("Avatar saved");
-      navigate(location.state?.fromProfile ? "/profile" : "/");
+      navigate(location.state?.fromProfile ? "/profile" : "/", { replace: true });
     } catch (error) {
       toast.error(error.response?.data?.message || "Could not save avatar");
     } finally {

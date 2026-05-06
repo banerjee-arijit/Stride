@@ -15,6 +15,7 @@ import {
 import { useAuth } from "../../context/AuthContext";
 import { useOnlineStatus } from "../../hooks/useOnlineStatus";
 import { Button } from "../ui/button";
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "../ui/dialog";
 
 const links = [
   { to: "/", label: "Dashboard", icon: LayoutDashboard },
@@ -25,6 +26,8 @@ const links = [
 export default function AppLayout({ darkMode, setDarkMode }) {
   const { user, logout } = useAuth();
   const online = useOnlineStatus();
+  const [logoutOpen, setLogoutOpen] = useState(false);
+  const [loggingOut, setLoggingOut] = useState(false);
   const [sidebarCollapsed, setSidebarCollapsed] = useState(
     () => localStorage.getItem("task_tracker_sidebar") === "collapsed"
   );
@@ -129,7 +132,7 @@ export default function AppLayout({ darkMode, setDarkMode }) {
             <Button variant="ghost" size="icon" onClick={() => setDarkMode((value) => !value)} aria-label="Toggle dark mode">
               {darkMode ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
             </Button>
-            <Button variant="outline" size="sm" onClick={logout}>
+            <Button variant="outline" size="sm" onClick={() => setLogoutOpen(true)}>
               <LogOut className="h-4 w-4" />
               Logout
             </Button>
@@ -164,6 +167,32 @@ export default function AppLayout({ darkMode, setDarkMode }) {
           ))}
         </nav>
       </div>
+
+      <Dialog open={logoutOpen} onOpenChange={setLogoutOpen}>
+        <DialogContent className="rounded-2xl">
+          <DialogHeader>
+            <DialogTitle>Log out?</DialogTitle>
+            <DialogDescription>
+              This will clear your local session, cached tasks, and offline queue on this device.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="flex justify-end gap-3">
+            <Button variant="outline" onClick={() => setLogoutOpen(false)} disabled={loggingOut}>
+              Cancel
+            </Button>
+            <Button
+              variant="destructive"
+              disabled={loggingOut}
+              onClick={async () => {
+                setLoggingOut(true);
+                await logout();
+              }}
+            >
+              {loggingOut ? "Logging out..." : "Logout"}
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

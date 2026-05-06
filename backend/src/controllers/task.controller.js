@@ -44,6 +44,10 @@ const validateTaskTimeWindow = ({ taskDate, startTime, endTime }) => {
     return "End time must be after start time";
   }
 
+  if (taskDate < todayKey()) {
+    return "Task date cannot be in the past";
+  }
+
   if (taskDate === todayKey() && startTime < getCurrentTimeKey()) {
     return "You cannot create a task before the current time";
   }

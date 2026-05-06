@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
-import { CalendarDays, CheckCircle2, GripVertical, ListTodo, Sparkles } from "lucide-react";
+import { CalendarDays, CheckCircle2, ListTodo, Sparkles } from "lucide-react";
 import { Button } from "../components/ui/button";
 import { DatePicker } from "../components/ui/date-picker";
 import TaskForm from "../features/tasks/TaskForm";
@@ -20,11 +20,6 @@ export default function TasksPage() {
   const [view, setView] = useState("date");
   const [search, setSearch] = useState("");
   const [debouncedSearch, setDebouncedSearch] = useState("");
-  const [draggingPanel, setDraggingPanel] = useState(null);
-  const [panelOrder, setPanelOrder] = useState(() => {
-    const savedOrder = localStorage.getItem("stride_task_panel_order");
-    return savedOrder ? JSON.parse(savedOrder) : ["planner", "viewer"];
-  });
 
   const params = useMemo(() => {
     const next = debouncedSearch ? { search: debouncedSearch } : {};
@@ -42,106 +37,8 @@ export default function TasksPage() {
     fetchTasks(params);
   }, [params]);
 
-  useEffect(() => {
-    localStorage.setItem("stride_task_panel_order", JSON.stringify(panelOrder));
-  }, [panelOrder]);
-
   const completedCount = tasks.filter((task) => task.completed).length;
   const openCount = tasks.length - completedCount;
-  const swapPanels = (targetPanel) => {
-    if (!draggingPanel || draggingPanel === targetPanel) return;
-    setPanelOrder((current) => [...current].reverse());
-    setDraggingPanel(null);
-  };
-
-  const startPanelDrag = (event, panel) => {
-    if (event.target.closest("input, textarea, button, a")) {
-      event.preventDefault();
-      return;
-    }
-
-    setDraggingPanel(panel);
-    event.dataTransfer.effectAllowed = "move";
-    event.dataTransfer.setData("text/plain", panel);
-  };
-
-  const panelClass = (panel) =>
-    `rounded-lg transition ${draggingPanel && draggingPanel !== panel ? "ring-2 ring-primary/30 ring-offset-2 ring-offset-background" : ""
-    }`;
-
-  const plannerPanel = (
-    <div
-      key="planner"
-      draggable
-      onDragStart={(event) => startPanelDrag(event, "planner")}
-      onDragEnd={() => setDraggingPanel(null)}
-      onDragOver={(event) => event.preventDefault()}
-      onDrop={() => swapPanels("planner")}
-      className={panelClass("planner")}
-    >
-      <div className="mb-3 flex items-center gap-2 rounded-lg border bg-card px-3 py-2 text-xs font-medium text-muted-foreground shadow-sm">
-        <GripVertical className="h-4 w-4" />
-        Drag panel left or right
-      </div>
-      <aside className="space-y-6">
-        <TaskForm onCreated={(date) => setSelectedDate(date)} />
-
-        <section className="rounded-lg border bg-card p-5 shadow-sm">
-          <div className="mb-4">
-            <label className="text-sm font-medium" htmlFor="selected-date">
-              Selected Date
-            </label>
-            <DatePicker
-              value={selectedDate}
-              onChange={(value) => {
-                setSelectedDate(value);
-                setView("date");
-              }}
-              className="mt-2"
-            />
-          </div>
-
-          <div className="grid gap-2">
-            {filters.map(({ key, label, icon: Icon }) => (
-              <Button
-                key={key}
-                type="button"
-                variant={view === key ? "default" : "ghost"}
-                className="h-11 justify-start rounded-lg"
-                onClick={() => setView(key)}
-              >
-                <Icon className="h-4 w-4" />
-                {label}
-              </Button>
-            ))}
-          </div>
-        </section>
-      </aside>
-    </div>
-  );
-
-  const viewerPanel = (
-    <div
-      key="viewer"
-      draggable
-      onDragStart={(event) => startPanelDrag(event, "viewer")}
-      onDragEnd={() => setDraggingPanel(null)}
-      onDragOver={(event) => event.preventDefault()}
-      onDrop={() => swapPanels("viewer")}
-      className={panelClass("viewer")}
-    >
-      <div className="mb-3 flex items-center gap-2 rounded-lg border bg-card px-3 py-2 text-xs font-medium text-muted-foreground shadow-sm">
-        <GripVertical className="h-4 w-4" />
-        Drag panel left or right
-      </div>
-      <TaskList selectedDate={selectedDate} view={view} search={search} setSearch={setSearch} />
-    </div>
-  );
-
-  const panels = {
-    planner: plannerPanel,
-    viewer: viewerPanel
-  };
 
   return (
     <div className="space-y-6 mb-6">
@@ -181,11 +78,43 @@ export default function TasksPage() {
         </div>
       </section>
 
-      <div
-        className={`grid gap-6 ${panelOrder[0] === "planner" ? "xl:grid-cols-[380px_1fr]" : "xl:grid-cols-[1fr_380px]"
-          }`}
-      >
-        {panelOrder.map((panel) => panels[panel])}
+      <div className="grid gap-6 xl:grid-cols-[380px_1fr]">
+        <aside className="space-y-6">
+          <TaskForm onCreated={(date) => setSelectedDate(date)} />
+
+          <section className="rounded-lg border bg-card p-5 shadow-sm">
+            <div className="mb-4">
+              <label className="text-sm font-medium" htmlFor="selected-date">
+                Selected Date
+              </label>
+              <DatePicker
+                value={selectedDate}
+                onChange={(value) => {
+                  setSelectedDate(value);
+                  setView("date");
+                }}
+                className="mt-2"
+              />
+            </div>
+
+            <div className="grid gap-2">
+              {filters.map(({ key, label, icon: Icon }) => (
+                <Button
+                  key={key}
+                  type="button"
+                  variant={view === key ? "default" : "ghost"}
+                  className="h-11 justify-start rounded-lg"
+                  onClick={() => setView(key)}
+                >
+                  <Icon className="h-4 w-4" />
+                  {label}
+                </Button>
+              ))}
+            </div>
+          </section>
+        </aside>
+
+        <TaskList selectedDate={selectedDate} view={view} search={search} setSearch={setSearch} />
       </div>
     </div>
   );

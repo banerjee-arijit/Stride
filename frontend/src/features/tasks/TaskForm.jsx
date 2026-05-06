@@ -46,7 +46,7 @@ const to24Hour = ({ hour, minute, period }) => {
   if (
     !Number.isInteger(parsedHour) ||
     !Number.isInteger(parsedMinute) ||
-    parsedHour < 1 ||
+    parsedHour < 0 ||
     parsedHour > 12 ||
     parsedMinute < 0 ||
     parsedMinute > 59
@@ -60,6 +60,12 @@ const to24Hour = ({ hour, minute, period }) => {
   }
 
   return `${pad(hours24)}:${pad(parsedMinute)}`;
+};
+
+const clampNumericInput = (value, min, max) => {
+  const numericValue = value.replace(/\D/g, "");
+  if (!numericValue) return "";
+  return String(Math.min(max, Math.max(min, Number(numericValue))));
 };
 
 const buildInitialState = () => ({
@@ -137,6 +143,11 @@ export default function TaskForm({ onCreated }) {
 
     if (form.endTime <= form.startTime) {
       toast.error("End time must be after start time");
+      return;
+    }
+
+    if (form.taskDate < todayKey()) {
+      toast.error("Task date cannot be in the past");
       return;
     }
 
@@ -318,10 +329,13 @@ export default function TaskForm({ onCreated }) {
                       </Label>
                       <Input
                         id={hourId}
+                        type="number"
                         inputMode="numeric"
-                        maxLength={2}
+                        min={0}
+                        max={12}
+                        step={1}
                         value={draft.hour}
-                        onChange={(event) => setDraft((current) => ({ ...current, hour: event.target.value.replace(/\D/g, "") }))}
+                        onChange={(event) => setDraft((current) => ({ ...current, hour: clampNumericInput(event.target.value, 0, 12) }))}
                         placeholder="09"
                         className="mt-2 h-14 rounded-xl text-center text-xl font-semibold"
                       />
@@ -335,10 +349,13 @@ export default function TaskForm({ onCreated }) {
                       </Label>
                       <Input
                         id={minuteId}
+                        type="number"
                         inputMode="numeric"
-                        maxLength={2}
+                        min={0}
+                        max={59}
+                        step={1}
                         value={draft.minute}
-                        onChange={(event) => setDraft((current) => ({ ...current, minute: event.target.value.replace(/\D/g, "") }))}
+                        onChange={(event) => setDraft((current) => ({ ...current, minute: clampNumericInput(event.target.value, 0, 59) }))}
                         placeholder="30"
                         className="mt-2 h-14 rounded-xl text-center text-xl font-semibold"
                       />

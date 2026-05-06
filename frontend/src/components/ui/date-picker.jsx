@@ -76,6 +76,7 @@ export function DatePicker({ value, onChange, className }) {
               const key = toDateKey(date);
               const isSelected = key === value;
               const isToday = key === todayKey();
+              const isPast = key < todayKey();
               const isCurrentMonth = date.getMonth() === visibleMonth.getMonth();
 
               return (
@@ -83,12 +84,15 @@ export function DatePicker({ value, onChange, className }) {
                   key={key}
                   type="button"
                   onClick={() => {
+                    if (isPast) return;
                     onChange(key);
                     setOpen(false);
                   }}
+                  disabled={isPast}
                   className={cn(
                     "h-9 rounded-md text-sm transition hover:bg-muted",
                     !isCurrentMonth && "text-muted-foreground/45",
+                    isPast && "cursor-not-allowed text-muted-foreground/25 hover:bg-transparent",
                     isToday && "border border-primary/40",
                     isSelected && "bg-primary text-primary-foreground hover:bg-primary"
                   )}
