@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { Navigate, Route, Routes } from "react-router-dom";
 import { Toaster } from "sonner";
 import AppLayout from "./components/layout/AppLayout";
+import InstallPrompt from "./components/pwa/InstallPrompt";
 import { TaskProvider } from "./context/TaskContext";
 import { useAuth } from "./context/AuthContext";
 import AuthPage from "./features/auth/AuthPage";
@@ -67,6 +68,7 @@ export default function App() {
           <Route path="profile" element={<ProfilePage />} />
         </Route>
       </Routes>
+      <InstallPrompt />
       <Toaster richColors position="top-right" />
     </>
   );
