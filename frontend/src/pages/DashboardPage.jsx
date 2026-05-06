@@ -11,7 +11,7 @@ import {
   Sparkles,
   Target
 } from "lucide-react";
-import { Bar, BarChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
+import { Area, AreaChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "../components/ui/card";
 import { Progress } from "../components/ui/progress";
 import { useAuth } from "../context/AuthContext";
@@ -24,6 +24,11 @@ const quotes = [
   "Finish the next useful thing.",
   "Discipline feels quiet when it becomes familiar."
 ];
+
+const chartTooltipLabel = (value, name, entry) => {
+  if (!entry?.payload) return [value, name];
+  return [value, `${entry.payload.dayLabel} (${entry.payload.date})`];
+};
 
 function StatCard({ icon: Icon, label, value, helper, accent = "primary" }) {
   return (
@@ -80,7 +85,7 @@ export default function DashboardPage() {
               Stay focused, finish clean, and keep your momentum visible.
             </h1>
             <p className="mt-4 max-w-xl text-sm leading-6 text-muted-foreground">
-              Complete tasks to earn achievement points, build streaks, and turn your workday into measurable progress.
+              Complete tasks to earn Rewards, build streaks, and turn your workday into measurable progress.
             </p>
             <div className="mt-6 flex flex-wrap gap-3">
               <Link
@@ -121,8 +126,8 @@ export default function DashboardPage() {
               </div>
             </div>
             <div className="mt-5 text-center">
-              <p className="font-medium">Achievement Score</p>
-              <p className="mt-1 text-sm text-muted-foreground">Earn +5 points per completed task.</p>
+              <p className="font-medium">Rewards Progress</p>
+              <p className="mt-1 text-sm text-muted-foreground">Earn +5 Rewards per completed task.</p>
             </div>
           </div>
         </div>
@@ -131,9 +136,9 @@ export default function DashboardPage() {
       <section className="grid gap-4 md:grid-cols-3">
         <StatCard
           icon={Award}
-          label="Achievement"
+          label="Rewards"
           value={`${score}/100`}
-          helper="Your current discipline score"
+          helper="Your current Rewards cycle"
         />
         <StatCard
           icon={CalendarCheck}
@@ -155,7 +160,7 @@ export default function DashboardPage() {
           <CardHeader className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
             <div>
               <CardTitle>Weekly Completions</CardTitle>
-              <CardDescription>Completed tasks from your latest active days.</CardDescription>
+              <CardDescription>Your last 7 days of completed tasks, including quieter days.</CardDescription>
             </div>
             <div className="rounded-md border bg-muted/40 px-3 py-1 text-sm text-muted-foreground">
               {profile?.stats?.completedTasks || 0} total completed
@@ -163,11 +168,19 @@ export default function DashboardPage() {
           </CardHeader>
           <CardContent className="h-80">
             <ResponsiveContainer width="100%" height="100%">
-              <BarChart data={profile?.stats?.weeklyCompleted || []} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
-                <XAxis dataKey="date" tickLine={false} axisLine={false} fontSize={12} />
+              <AreaChart data={profile?.stats?.weeklyCompleted || []} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
+                <defs>
+                  <linearGradient id="colorCompleted" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="5%" stopColor="hsl(var(--primary))" stopOpacity={0.5}/>
+                    <stop offset="95%" stopColor="hsl(var(--primary))" stopOpacity={0}/>
+                  </linearGradient>
+                </defs>
+                <XAxis dataKey="dayLabel" tickLine={false} axisLine={false} fontSize={12} />
                 <YAxis allowDecimals={false} tickLine={false} axisLine={false} fontSize={12} />
                 <Tooltip
-                  cursor={{ fill: "hsl(var(--muted))" }}
+                  cursor={{ stroke: "hsl(var(--muted))", strokeWidth: 1 }}
+                  formatter={chartTooltipLabel}
+                  labelFormatter={(label) => label}
                   contentStyle={{
                     borderRadius: 8,
                     border: "1px solid hsl(var(--border))",
@@ -175,8 +188,15 @@ export default function DashboardPage() {
                     color: "hsl(var(--foreground))"
                   }}
                 />
-                <Bar dataKey="completed" fill="hsl(var(--primary))" radius={[8, 8, 0, 0]} />
-              </BarChart>
+                <Area
+                  type="monotone"
+                  dataKey="completed"
+                  stroke="hsl(var(--primary))"
+                  strokeWidth={3}
+                  fillOpacity={1}
+                  fill="url(#colorCompleted)"
+                />
+              </AreaChart>
             </ResponsiveContainer>
           </CardContent>
         </Card>
@@ -194,7 +214,7 @@ export default function DashboardPage() {
               <div className="mt-6 rounded-lg border bg-muted/40 p-4">
                 <p className="text-sm font-medium">Score Rule</p>
                 <p className="mt-2 text-sm leading-6 text-muted-foreground">
-                  Every completed task gives +5 points. Your score is capped at 100.
+                  Every completed task gives +5 Rewards. When you hit 100, the cycle resets to 0.
                 </p>
               </div>
             </CardContent>

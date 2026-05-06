@@ -17,8 +17,36 @@ const buildTaskQuery = (userId, query) => {
   return filters;
 };
 
+const findOverlappingTask = async ({ userId, taskDate, startTime, endTime, excludeTaskId }) => {
+  const conflictQuery = {
+    userId,
+    taskDate,
+    startTime: { $lt: endTime },
+    endTime: { $gt: startTime }
+  };
+
+  if (excludeTaskId) {
+    conflictQuery._id = { $ne: excludeTaskId };
+  }
+
+  return Task.findOne(conflictQuery);
+};
+
 export const createTask = async (req, res, next) => {
   try {
+    const conflictingTask = await findOverlappingTask({
+      userId: req.user._id,
+      taskDate: req.body.taskDate,
+      startTime: req.body.startTime,
+      endTime: req.body.endTime
+    });
+
+    if (conflictingTask) {
+      return res.status(409).json({
+        message: "Another task already exists in that time range"
+      });
+    }
+
     const task = await Task.create({
       userId: req.user._id,
       title: req.body.title,
@@ -83,6 +111,20 @@ export const updateTask = async (req, res, next) => {
       return res.status(400).json({ message: "End time must be after start time" });
     }
 
+    const conflictingTask = await findOverlappingTask({
+      userId: req.user._id,
+      taskDate: task.taskDate,
+      startTime: task.startTime,
+      endTime: task.endTime,
+      excludeTaskId: task._id
+    });
+
+    if (conflictingTask) {
+      return res.status(409).json({
+        message: "Another task already exists in that time range"
+      });
+    }
+
     await task.save();
     res.json(task);
   } catch (error) {
@@ -109,11 +151,22 @@ export const completeTask = async (req, res, next) => {
     const user = await User.findById(req.user._id);
     const completionDate = task.completedAt.toISOString().slice(0, 10);
 
-    user.achievementScore = Math.min(100, user.achievementScore + 5);
+    const nextScore =
+      process.env.DEMO_FORCE_SCORE_100 === "true" ? 100 : Math.min(100, user.achievementScore + 5);
+    const fullCycleReached = nextScore >= 100;
+
+    user.achievementScore = nextScore;
 
     if (user.lastCompletedDate !== completionDate) {
       user.streak = user.lastCompletedDate === yesterdayKey(completionDate) ? user.streak + 1 : 1;
       user.lastCompletedDate = completionDate;
+    }
+
+    let scoreReset = false;
+    if (fullCycleReached) {
+      user.achievementScore = 0;
+      user.achievementReward = "";
+      scoreReset = true;
     }
 
     await user.save();
@@ -121,7 +174,10 @@ export const completeTask = async (req, res, next) => {
     res.json({
       task,
       achievementScore: user.achievementScore,
-      streak: user.streak
+      achievementReward: user.achievementReward,
+      streak: user.streak,
+      goalReached: fullCycleReached,
+      scoreReset
     });
   } catch (error) {
     next(error);

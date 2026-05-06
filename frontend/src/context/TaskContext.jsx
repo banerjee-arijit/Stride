@@ -37,10 +37,21 @@ export function TaskProvider({ children }) {
     setTasks((current) => current.map((task) => (task._id === id ? data.task : task)));
     setUser((current) =>
       current
-        ? { ...current, achievementScore: data.achievementScore, streak: data.streak }
+        ? {
+            ...current,
+            achievementScore: data.achievementScore,
+            achievementReward: data.achievementReward,
+            streak: data.streak
+          }
         : current
     );
-    toast.success("+5 achievement points earned");
+    if (data.scoreReset) {
+      toast.success("You hit 100 Rewards. The cycle reset to 0 and your pledge unlocked again.");
+    } else if (data.goalReached) {
+      toast.success("You hit your 100 Rewards cycle.");
+    } else {
+      toast.success("+5 Rewards earned");
+    }
     return data;
   };
 

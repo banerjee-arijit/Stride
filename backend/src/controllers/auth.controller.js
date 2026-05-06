@@ -7,6 +7,7 @@ const userResponse = (user) => ({
   email: user.email,
   avatar: user.avatar,
   achievementScore: user.achievementScore,
+  achievementReward: user.achievementReward,
   streak: user.streak,
   createdAt: user.createdAt
 });

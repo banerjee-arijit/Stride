@@ -156,7 +156,7 @@ export default function TasksPage() {
               Shape your day into focused time blocks.
             </h1>
             <p className="mt-4 max-w-2xl text-sm leading-6 text-muted-foreground">
-              Schedule tasks with a start and end time, then complete them to earn achievement points.
+              Schedule tasks with a start and end time, then complete them to earn Rewards.
             </p>
           </div>
 

@@ -13,6 +13,12 @@ export function AuthProvider({ children }) {
   });
   const [loading, setLoading] = useState(false);
 
+  const clearSession = () => {
+    localStorage.removeItem("task_tracker_token");
+    localStorage.removeItem("task_tracker_user");
+    setUser(null);
+  };
+
   const persistSession = ({ token, user: authUser }) => {
     localStorage.setItem("task_tracker_token", token);
     localStorage.setItem("task_tracker_user", JSON.stringify(authUser));
@@ -45,9 +51,7 @@ export function AuthProvider({ children }) {
   };
 
   const logout = () => {
-    localStorage.removeItem("task_tracker_token");
-    localStorage.removeItem("task_tracker_user");
-    setUser(null);
+    clearSession();
     navigate("/login");
   };
 
@@ -65,12 +69,47 @@ export function AuthProvider({ children }) {
     return data.user;
   };
 
+  const updateAchievementReward = async (achievementReward) => {
+    const { data } = await api.patch("/users/profile/reward", { achievementReward });
+    localStorage.setItem("task_tracker_user", JSON.stringify(data.user));
+    setUser(data.user);
+    return data.user;
+  };
+
+  const deleteAccount = async (payload) => {
+    setLoading(true);
+    try {
+      await api.delete("/users/profile", { data: payload });
+      clearSession();
+      toast.success("Account deleted");
+      navigate("/signing-off", { replace: true });
+    } finally {
+      setLoading(false);
+    }
+  };
+
   useEffect(() => {
-    if (user) refreshProfile().catch(() => logout());
+    if (user) {
+      refreshProfile().catch(() => {
+        clearSession();
+        navigate("/login");
+      });
+    }
   }, []);
 
   const value = useMemo(
-    () => ({ user, setUser, loading, register, login, logout, refreshProfile, updateAvatar }),
+    () => ({
+      user,
+      setUser,
+      loading,
+      register,
+      login,
+      logout,
+      refreshProfile,
+      updateAvatar,
+      updateAchievementReward,
+      deleteAccount
+    }),
     [user, loading]
   );
 

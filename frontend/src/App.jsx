@@ -8,6 +8,7 @@ import AuthPage from "./features/auth/AuthPage";
 import AvatarSelectionPage from "./pages/AvatarSelectionPage";
 import DashboardPage from "./pages/DashboardPage";
 import ProfilePage from "./pages/ProfilePage";
+import SigningOffPage from "./pages/SigningOffPage";
 import TaskDetailPage from "./pages/TaskDetailPage";
 import TasksPage from "./pages/TasksPage";
 
@@ -39,6 +40,7 @@ export default function App() {
       <Routes>
         <Route path="/login" element={<PublicRoute><AuthPage /></PublicRoute>} />
         <Route path="/register" element={<PublicRoute><AuthPage /></PublicRoute>} />
+        <Route path="/signing-off" element={<SigningOffPage />} />
         <Route
           path="/choose-avatar"
           element={

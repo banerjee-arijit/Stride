@@ -28,6 +28,12 @@ const userSchema = new mongoose.Schema(
       min: 0,
       max: 100
     },
+    achievementReward: {
+      type: String,
+      default: "",
+      trim: true,
+      maxlength: 160
+    },
     avatar: {
       type: String,
       default: null

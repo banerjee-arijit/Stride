@@ -50,7 +50,7 @@ export default function AuthPage() {
           </p>
 
           <p className="mt-4 max-w-md text-sm leading-6 text-white/80">
-            Plan your day, finish intentionally, and earn achievement points with every completed task.
+            Plan your day, finish intentionally, and earn Rewards with every completed task.
           </p>
         </div>
       </section>
@@ -72,7 +72,7 @@ export default function AuthPage() {
 
             <p className="mt-3 text-sm leading-6 text-muted-foreground">
               {isLogin
-                ? "Sign in to organize your day and keep your score moving."
+                ? "Sign in to organize your day and keep your Rewards cycle moving."
                 : "Build discipline one completed task at a time."}
             </p>
           </div>

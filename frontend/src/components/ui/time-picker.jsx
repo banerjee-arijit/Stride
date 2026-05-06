@@ -16,9 +16,10 @@ export function TimePicker({ value, onChange, className }) {
   const [open, setOpen] = useState(false);
   const times = useMemo(
     () =>
-      Array.from({ length: 48 }, (_, index) => {
-        const hour = Math.floor(index / 2);
-        const minute = index % 2 === 0 ? "00" : "30";
+      Array.from({ length: 288 }, (_, index) => {
+        const totalMinutes = index * 5;
+        const hour = Math.floor(totalMinutes / 60);
+        const minute = String(totalMinutes % 60).padStart(2, "0");
         return `${String(hour).padStart(2, "0")}:${minute}`;
       }),
     []
@@ -37,7 +38,7 @@ export function TimePicker({ value, onChange, className }) {
       </Button>
 
       {open && (
-        <div className="absolute left-0 top-12 z-50 max-h-72 w-48 overflow-y-auto rounded-lg border bg-card p-2 shadow-soft">
+        <div className="absolute left-0 top-12 z-50 max-h-72 w-52 overflow-y-auto rounded-lg border bg-card p-2 shadow-soft">
           {times.map((time) => (
             <button
               key={time}

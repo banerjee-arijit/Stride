@@ -1,26 +1,118 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
-import { Award, CalendarCheck2, Mail, Sparkles, Trophy } from "lucide-react";
+import { Award, CalendarCheck2, Mail, Sparkles, Trash2, Trophy } from "lucide-react";
+import { toast } from "sonner";
 import AvatarIllustration from "../components/avatar/AvatarIllustration";
+import { Button } from "../components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "../components/ui/card";
+import { Dialog, DialogContent } from "../components/ui/dialog";
 import { Progress } from "../components/ui/progress";
 import { useAuth } from "../context/AuthContext";
 
+const emojiRatings = [
+  {
+    value: "love",
+    emoji: "\u{1F60D}",
+    label: "Loved it",
+    activeClass: "border-pink-300 bg-pink-100/80 text-pink-700 dark:bg-pink-500/15 dark:text-pink-200",
+    glowClass: "from-pink-300/45 via-rose-300/25 to-transparent"
+  },
+  {
+    value: "happy",
+    emoji: "\u{1F642}",
+    label: "Pretty good",
+    activeClass: "border-emerald-300 bg-emerald-100/80 text-emerald-700 dark:bg-emerald-500/15 dark:text-emerald-200",
+    glowClass: "from-emerald-300/45 via-teal-300/25 to-transparent"
+  },
+  {
+    value: "mixed",
+    emoji: "\u{1F610}",
+    label: "Mixed",
+    activeClass: "border-amber-300 bg-amber-100/80 text-amber-700 dark:bg-amber-500/15 dark:text-amber-200",
+    glowClass: "from-amber-300/45 via-yellow-300/25 to-transparent"
+  },
+  {
+    value: "sad",
+    emoji: "\u{1F615}",
+    label: "Not great",
+    activeClass: "border-sky-300 bg-sky-100/80 text-sky-700 dark:bg-sky-500/15 dark:text-sky-200",
+    glowClass: "from-sky-300/45 via-cyan-300/25 to-transparent"
+  },
+  {
+    value: "done",
+    emoji: "\u{1F635}",
+    label: "I am done",
+    activeClass: "border-violet-300 bg-violet-100/80 text-violet-700 dark:bg-violet-500/15 dark:text-violet-200",
+    glowClass: "from-violet-300/45 via-fuchsia-300/25 to-transparent"
+  }
+];
+
+const deleteReasons = [
+  "I finished what I needed",
+  "The flow feels too strict",
+  "I am trying another app",
+  "I need a break from tracking",
+  "Something felt confusing"
+];
+
 export default function ProfilePage() {
-  const { user, refreshProfile } = useAuth();
+  const { user, refreshProfile, updateAchievementReward, deleteAccount, loading } = useAuth();
   const [stats, setStats] = useState(null);
+  const [pledgeOpen, setPledgeOpen] = useState(false);
+  const [confirmOpen, setConfirmOpen] = useState(false);
+  const [celebrate, setCelebrate] = useState(false);
+  const [reward, setReward] = useState(user?.achievementReward || "");
+  const [savingReward, setSavingReward] = useState(false);
+  const [deleteOpen, setDeleteOpen] = useState(false);
+  const [deleteReason, setDeleteReason] = useState("");
+  const [deleteFeedback, setDeleteFeedback] = useState("");
+  const [deleteRating, setDeleteRating] = useState("");
 
   useEffect(() => {
     refreshProfile()
       .then((data) => setStats(data.stats))
-      .catch(() => { });
+      .catch(() => {});
   }, []);
+
+  useEffect(() => {
+    setReward(user?.achievementReward || "");
+  }, [user?.achievementReward]);
 
   const score = user?.achievementScore || 0;
   const completionRate = stats?.totalTasks
     ? Math.round(((stats?.completedTasks || 0) / stats.totalTasks) * 100)
     : 0;
   const ringSize = 2 * Math.PI * 42;
+
+  const handleRewardSave = async () => {
+    setSavingReward(true);
+    try {
+      await updateAchievementReward(reward.trim());
+      toast.success("Pledge committed");
+      setConfirmOpen(false);
+      setCelebrate(true);
+      window.setTimeout(() => {
+        setCelebrate(false);
+        setPledgeOpen(false);
+      }, 1800);
+    } catch (error) {
+      toast.error(error.response?.data?.message || "Could not commit pledge");
+    } finally {
+      setSavingReward(false);
+    }
+  };
+
+  const handleDeleteAccount = async () => {
+    try {
+      await deleteAccount({
+        reason: deleteReason,
+        feedback: deleteFeedback,
+        rating: deleteRating
+      });
+    } catch (error) {
+      toast.error(error.response?.data?.message || "Could not delete account");
+    }
+  };
 
   return (
     <div className="mx-auto max-w-6xl space-y-6">
@@ -71,9 +163,9 @@ export default function ProfilePage() {
               </div>
 
               <div>
-                <p className="text-sm text-muted-foreground">Achievement Score</p>
+                <p className="text-sm text-muted-foreground">Rewards Progress</p>
                 <p className="mt-1 text-2xl font-semibold">{score}/100</p>
-                <p className="mt-1 text-xs text-muted-foreground">+5 points for each completed task</p>
+                <p className="mt-1 text-xs text-muted-foreground">+5 Rewards for each completed task</p>
               </div>
             </div>
           </div>
@@ -85,9 +177,9 @@ export default function ProfilePage() {
               <div className="mb-3 flex items-center justify-between">
                 <div>
                   <h2 className="font-semibold">Progress</h2>
-                  <p className="text-sm text-muted-foreground">Your current discipline score.</p>
+                  <p className="text-sm text-muted-foreground">Your current Rewards cycle.</p>
                 </div>
-                <p className="text-sm font-semibold text-primary">{score}%</p>
+                <p className="text-sm font-semibold text-primary">{score}/100</p>
               </div>
               <Progress value={score} className="h-4" />
             </div>
@@ -137,10 +229,270 @@ export default function ProfilePage() {
                   Complete one meaningful task today and your dashboard moves forward with you.
                 </p>
               </div>
+
+              <div className="mt-6 overflow-hidden rounded-2xl border bg-gradient-to-br from-primary/[0.07] via-background to-accent/[0.08]">
+                <div className="border-b border-border/70 px-4 py-4">
+                  <p className="text-sm font-semibold">Pledge</p>
+                  <p className="mt-1 text-sm leading-6 text-muted-foreground">
+                    One personal reward for this full 0 to 100 cycle.
+                  </p>
+                </div>
+
+                <div className="p-4">
+                  {user?.achievementReward ? (
+                    <div className="rounded-2xl border border-primary/15 bg-background/80 p-4 shadow-sm backdrop-blur">
+                      <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-primary/75">
+                        Locked in
+                      </p>
+                      <p className="mt-3 text-base font-semibold leading-7 text-foreground">
+                        {user.achievementReward}
+                      </p>
+                      <p className="mt-3 text-xs leading-5 text-muted-foreground">
+                        This opens again after you complete the full Rewards cycle.
+                      </p>
+                    </div>
+                  ) : (
+                    <div className="rounded-2xl border border-dashed border-primary/20 bg-background/80 p-4 backdrop-blur">
+                      <p className="text-sm font-medium text-foreground">Commit once for this cycle</p>
+                      <p className="mt-2 text-sm leading-6 text-muted-foreground">
+                        Make the finish line feel personal, then let the pledge carry some weight.
+                      </p>
+                      <Button size="sm" className="mt-4 rounded-full px-4" onClick={() => setPledgeOpen(true)}>
+                        Add Pledge
+                      </Button>
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              <div className="mt-6 overflow-hidden rounded-2xl border border-destructive/20 bg-gradient-to-br from-destructive/[0.05] via-background to-background">
+                <div className="border-b border-destructive/10 px-4 py-4">
+                  <p className="text-sm font-semibold text-foreground">Delete account</p>
+                  <p className="mt-1 text-sm leading-6 text-muted-foreground">
+                    Remove your profile, tasks, and current Rewards cycle from the database.
+                  </p>
+                </div>
+
+                <div className="flex items-center justify-between gap-4 p-4">
+                  <p className="max-w-[12rem] text-xs leading-5 text-muted-foreground">
+                    We will ask for a reason, a quick mood rating, and optional feedback before it is gone.
+                  </p>
+                  <Button
+                    variant="outline"
+                    className="rounded-full border-destructive/25 px-4 text-destructive hover:bg-destructive/10"
+                    onClick={() => setDeleteOpen(true)}
+                  >
+                    <Trash2 className="h-4 w-4" />
+                    Delete
+                  </Button>
+                </div>
+              </div>
             </CardContent>
           </Card>
         </div>
       </section>
+
+      <Dialog
+        open={pledgeOpen}
+        onOpenChange={(open) => {
+          setPledgeOpen(open);
+          if (!open) {
+            setConfirmOpen(false);
+            setCelebrate(false);
+          }
+        }}
+      >
+        <DialogContent className="left-0 top-0 h-screen w-screen max-w-none translate-x-0 translate-y-0 rounded-none border-0 bg-background p-0">
+          <div className="relative flex h-full flex-col overflow-hidden bg-[radial-gradient(circle_at_top_left,_rgba(31,118,111,0.14),_transparent_26%),radial-gradient(circle_at_top_right,_rgba(245,158,11,0.14),_transparent_22%),linear-gradient(180deg,_rgba(255,255,255,0.96),_rgba(247,250,248,0.98))]">
+            {celebrate && (
+              <div className="pointer-events-none absolute inset-0 z-20 overflow-hidden">
+                {[
+                  "left-[10%] top-[16%] bg-primary rotate-12",
+                  "left-[18%] top-[9%] bg-accent -rotate-12",
+                  "left-[30%] top-[18%] bg-primary rotate-45",
+                  "left-[42%] top-[10%] bg-accent -rotate-6",
+                  "left-[55%] top-[15%] bg-primary rotate-12",
+                  "left-[67%] top-[8%] bg-accent rotate-45",
+                  "left-[79%] top-[16%] bg-primary -rotate-12",
+                  "left-[88%] top-[11%] bg-accent rotate-6",
+                  "left-[22%] top-[30%] bg-accent rotate-12",
+                  "left-[74%] top-[30%] bg-primary -rotate-12"
+                ].map((position, index) => (
+                  <span
+                    key={position}
+                    className={`absolute h-3 w-8 rounded-full opacity-80 animate-ping ${position}`}
+                    style={{ animationDuration: `${900 + index * 100}ms` }}
+                  />
+                ))}
+              </div>
+            )}
+
+            <div className="flex items-center justify-between border-b bg-background/80 px-6 py-4 backdrop-blur sm:px-10">
+              <p className="text-sm font-medium text-muted-foreground">Pledge space</p>
+            </div>
+
+            <div className="mx-auto flex w-full max-w-5xl flex-1 flex-col px-6 py-12 sm:px-10">
+              <div className="mx-auto max-w-3xl text-center">
+                <p className="text-sm uppercase tracking-[0.2em] text-primary/80">100 Rewards cycle</p>
+                <h2 className="mt-4 text-lg font-semibold tracking-tight text-foreground sm:text-xl">
+                  Write one promise you actually want to keep.
+                </h2>
+              </div>
+
+              <div className="mx-auto mt-12 w-full max-w-4xl text-center text-base font-medium leading-8 text-muted-foreground sm:text-xl">
+                I pledge that only after completing my tasks and reaching 100 Rewards
+              </div>
+
+              <textarea
+                value={reward}
+                onChange={(event) => setReward(event.target.value)}
+                placeholder="I will watch a movie by myself, take a short trip, buy that book, or do something I genuinely care about."
+                className="mx-auto mt-10 min-h-[360px] w-full max-w-4xl resize-none border-0 bg-transparent text-center text-4xl font-bold leading-[1.28] tracking-tight outline-none placeholder:text-muted-foreground/28 sm:text-6xl"
+              />
+
+              <div className="mx-auto mb-8 mt-auto">
+                <button
+                  type="button"
+                  disabled={!reward.trim() || savingReward}
+                  onClick={() => setConfirmOpen(true)}
+                  className="group relative rounded-full px-10 py-4 text-center transition disabled:cursor-not-allowed disabled:opacity-30"
+                >
+                  <span className="absolute inset-0 rounded-full bg-[radial-gradient(circle_at_top_left,_rgba(31,118,111,0.25),_transparent_50%),radial-gradient(circle_at_bottom_right,_rgba(245,158,11,0.22),_transparent_45%)] blur-xl transition group-hover:opacity-80" />
+                  <span className="relative text-2xl font-semibold tracking-[0.18em] text-primary transition group-hover:scale-105">
+                    {savingReward ? "COMMITTING" : "COMMIT"}
+                  </span>
+                </button>
+              </div>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      <Dialog open={confirmOpen} onOpenChange={setConfirmOpen}>
+        <DialogContent className="max-w-sm rounded-3xl border bg-card p-6 shadow-soft">
+          <div className="space-y-4 text-center">
+            <p className="text-sm uppercase tracking-[0.16em] text-primary/80">Ready for your commit</p>
+            <h3 className="text-2xl font-semibold tracking-tight">Lock this pledge in?</h3>
+            <p className="text-sm leading-6 text-muted-foreground">
+              After this, you cannot change it until your Rewards cycle reaches 100 and resets.
+            </p>
+            <div className="rounded-2xl border bg-background/70 p-4 text-left text-base font-semibold leading-7">
+              {reward}
+            </div>
+            <div className="flex items-center justify-center gap-3 pt-2">
+              <Button variant="outline" onClick={() => setConfirmOpen(false)}>
+                Let me check
+              </Button>
+              <Button onClick={handleRewardSave} disabled={savingReward}>
+                {savingReward ? "Committing..." : "Commit"}
+              </Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      <Dialog
+        open={deleteOpen}
+        onOpenChange={(open) => {
+          setDeleteOpen(open);
+          if (!open) {
+            setDeleteReason("");
+            setDeleteFeedback("");
+            setDeleteRating("");
+          }
+        }}
+      >
+        <DialogContent className="max-h-[78vh] max-w-2xl overflow-hidden rounded-[2rem] border bg-card p-0 shadow-soft">
+          <div className="flex max-h-[78vh] flex-col overflow-hidden rounded-[2rem]">
+            <div className="border-b bg-gradient-to-br from-destructive/10 via-background to-primary/10 px-6 py-6 sm:px-8">
+              <p className="text-sm uppercase tracking-[0.18em] text-destructive/80">Before you go</p>
+              <h3 className="mt-3 text-2xl font-semibold tracking-tight">Delete your account</h3>
+              <p className="mt-2 max-w-lg text-sm leading-6 text-muted-foreground">
+                Help us understand why you are leaving. We will save your feedback, then remove your account and tasks from Stride.
+              </p>
+            </div>
+
+            <div className="flex-1 space-y-7 overflow-y-auto px-6 py-6 sm:px-8">
+              <div>
+                <p className="text-sm font-medium">Reason for deleting</p>
+                <div className="mt-3 flex flex-wrap gap-2">
+                  {deleteReasons.map((reason) => (
+                    <button
+                      key={reason}
+                      type="button"
+                      onClick={() => setDeleteReason(reason)}
+                      className={`rounded-full border px-4 py-2 text-sm transition ${
+                        deleteReason === reason
+                          ? "border-destructive/40 bg-destructive/10 text-destructive"
+                          : "border-border bg-background text-muted-foreground hover:border-destructive/20 hover:text-foreground"
+                      }`}
+                    >
+                      {reason}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              <div>
+                <p className="text-sm font-medium">Rate us with a mood</p>
+                <div className="mt-3 grid grid-cols-5 gap-2">
+                  {emojiRatings.map((item) => (
+                    <button
+                      key={item.value}
+                      type="button"
+                      onClick={() => setDeleteRating(item.value)}
+                      className={`rounded-2xl border px-3 py-4 text-center transition duration-200 ${
+                        deleteRating === item.value
+                          ? `${item.activeClass} scale-[1.03] shadow-sm`
+                          : "border-border bg-background hover:border-primary/20 hover:bg-muted/40"
+                      }`}
+                      title={item.label}
+                    >
+                      <div className="relative mx-auto grid h-11 w-11 place-items-center">
+                        {deleteRating === item.value && (
+                          <span className={`absolute inset-0 rounded-full bg-gradient-to-br ${item.glowClass} animate-pulse`} />
+                        )}
+                        <span className={`relative text-2xl ${deleteRating === item.value ? "animate-bounce" : ""}`}>
+                          {item.emoji}
+                        </span>
+                      </div>
+                      <div className="mt-2 text-[11px] font-medium text-muted-foreground">{item.label}</div>
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              <div>
+                <div className="flex items-center justify-between gap-3">
+                  <p className="text-sm font-medium">Feedback</p>
+                  <span className="text-xs text-muted-foreground">Optional</span>
+                </div>
+                <textarea
+                  value={deleteFeedback}
+                  onChange={(event) => setDeleteFeedback(event.target.value)}
+                  placeholder="Tell us anything you wish felt better."
+                  className="mt-3 min-h-[140px] w-full resize-none rounded-3xl border bg-background px-5 py-4 text-sm leading-7 outline-none transition placeholder:text-muted-foreground/55 focus:border-primary/30"
+                />
+              </div>
+            </div>
+
+            <div className="border-t bg-background/95 px-6 py-4 backdrop-blur sm:px-8">
+              <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                <p className="text-sm text-muted-foreground">
+                  This action permanently deletes your account from the database.
+                </p>
+                <Button
+                  variant="destructive"
+                  onClick={handleDeleteAccount}
+                  disabled={!deleteReason || !deleteRating || loading}
+                >
+                  {loading ? "Deleting..." : "Send & delete account"}
+                </Button>
+              </div>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
