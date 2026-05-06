@@ -99,6 +99,7 @@ export default function TaskList({ selectedDate, view, search, setSearch }) {
                       <Badge variant={task.completed ? "success" : "muted"}>
                         {task.completed ? "Completed" : "Open"}
                       </Badge>
+                      {task.pendingSync && <Badge variant="muted">Pending sync</Badge>}
                     </div>
                     <p className="mt-2 max-w-2xl text-sm leading-6 text-muted-foreground">
                       {task.subtitle || "No subtitle"}

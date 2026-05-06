@@ -1,0 +1,20 @@
+{
+  "name": "Stride Task Tracker",
+  "short_name": "Stride",
+  "description": "Plan focused tasks, track rewards, and keep your momentum visible.",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "orientation": "portrait-primary",
+  "background_color": "#f8fafc",
+  "theme_color": "#237d75",
+  "categories": ["productivity", "utilities"],
+  "icons": [
+    {
+      "src": "/icons/icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}

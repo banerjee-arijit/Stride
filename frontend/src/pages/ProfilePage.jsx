@@ -248,7 +248,7 @@ export default function ProfilePage() {
                         {user.achievementReward}
                       </p>
                       <p className="mt-3 text-xs leading-5 text-muted-foreground">
-                        This opens again after you complete the full Rewards cycle.
+                        This becomes editable again after you reach 100 Rewards and the cycle resets to 0.
                       </p>
                     </div>
                   ) : (

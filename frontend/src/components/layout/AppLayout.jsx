@@ -9,9 +9,11 @@ import {
   PanelLeftClose,
   PanelLeftOpen,
   Sun,
-  User
+  User,
+  WifiOff
 } from "lucide-react";
 import { useAuth } from "../../context/AuthContext";
+import { useOnlineStatus } from "../../hooks/useOnlineStatus";
 import { Button } from "../ui/button";
 
 const links = [
@@ -22,6 +24,7 @@ const links = [
 
 export default function AppLayout({ darkMode, setDarkMode }) {
   const { user, logout } = useAuth();
+  const online = useOnlineStatus();
   const [sidebarCollapsed, setSidebarCollapsed] = useState(
     () => localStorage.getItem("task_tracker_sidebar") === "collapsed"
   );
@@ -132,6 +135,15 @@ export default function AppLayout({ darkMode, setDarkMode }) {
             </Button>
           </div>
         </header>
+
+        {!online && (
+          <div className="border-b border-accent/30 bg-accent/10 px-4 py-3 text-accent-foreground md:px-8">
+            <div className="flex items-center gap-2 text-sm font-medium">
+              <WifiOff className="h-4 w-4" />
+              You are offline. Please connect to the internet.
+            </div>
+          </div>
+        )}
 
         <main className="p-4 md:p-8">
           <Outlet />

@@ -2,6 +2,7 @@ import { createContext, useContext, useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 import api from "../api/client";
+import { cacheProfile, getCachedProfile } from "../lib/offlineStore";
 
 const AuthContext = createContext(null);
 
@@ -19,10 +20,17 @@ export function AuthProvider({ children }) {
     setUser(null);
   };
 
+  const cacheUserSnapshot = async (authUser, data = {}) => {
+    const userId = authUser.id || authUser._id;
+    const cachedProfile = await getCachedProfile(userId);
+    cacheProfile(userId, { ...cachedProfile, ...data, user: authUser }).catch(() => {});
+  };
+
   const persistSession = ({ token, user: authUser }) => {
     localStorage.setItem("task_tracker_token", token);
     localStorage.setItem("task_tracker_user", JSON.stringify(authUser));
     setUser(authUser);
+    cacheUserSnapshot(authUser).catch(() => {});
     return authUser;
   };
 
@@ -56,16 +64,30 @@ export function AuthProvider({ children }) {
   };
 
   const refreshProfile = async () => {
-    const { data } = await api.get("/users/profile");
-    localStorage.setItem("task_tracker_user", JSON.stringify(data.user));
-    setUser(data.user);
-    return data;
+    try {
+      const { data } = await api.get("/users/profile");
+      localStorage.setItem("task_tracker_user", JSON.stringify(data.user));
+      setUser(data.user);
+      cacheProfile(data.user.id || data.user._id, data).catch(() => {});
+      return data;
+    } catch (error) {
+      const cachedProfile = await getCachedProfile(user?.id || user?._id);
+
+      if (cachedProfile) {
+        localStorage.setItem("task_tracker_user", JSON.stringify(cachedProfile.user));
+        setUser(cachedProfile.user);
+        return cachedProfile;
+      }
+
+      throw error;
+    }
   };
 
   const updateAvatar = async (avatar) => {
     const { data } = await api.patch("/users/profile/avatar", { avatar });
     localStorage.setItem("task_tracker_user", JSON.stringify(data.user));
     setUser(data.user);
+    await cacheUserSnapshot(data.user);
     return data.user;
   };
 
@@ -73,6 +95,7 @@ export function AuthProvider({ children }) {
     const { data } = await api.patch("/users/profile/reward", { achievementReward });
     localStorage.setItem("task_tracker_user", JSON.stringify(data.user));
     setUser(data.user);
+    await cacheUserSnapshot(data.user);
     return data.user;
   };
 
@@ -91,8 +114,10 @@ export function AuthProvider({ children }) {
   useEffect(() => {
     if (user) {
       refreshProfile().catch(() => {
-        clearSession();
-        navigate("/login");
+        if (navigator.onLine) {
+          clearSession();
+          navigate("/login");
+        }
       });
     }
   }, []);

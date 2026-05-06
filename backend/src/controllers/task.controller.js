@@ -32,8 +32,33 @@ const findOverlappingTask = async ({ userId, taskDate, startTime, endTime, exclu
   return Task.findOne(conflictQuery);
 };
 
+const getCurrentTimeKey = () => {
+  const now = new Date();
+  const hours = String(now.getHours()).padStart(2, "0");
+  const minutes = String(now.getMinutes()).padStart(2, "0");
+  return `${hours}:${minutes}`;
+};
+
+const validateTaskTimeWindow = ({ taskDate, startTime, endTime }) => {
+  if (endTime <= startTime) {
+    return "End time must be after start time";
+  }
+
+  if (taskDate === todayKey() && startTime < getCurrentTimeKey()) {
+    return "You cannot create a task before the current time";
+  }
+
+  return null;
+};
+
 export const createTask = async (req, res, next) => {
   try {
+    const timeValidationMessage = validateTaskTimeWindow(req.body);
+
+    if (timeValidationMessage) {
+      return res.status(400).json({ message: timeValidationMessage });
+    }
+
     const conflictingTask = await findOverlappingTask({
       userId: req.user._id,
       taskDate: req.body.taskDate,
@@ -107,8 +132,10 @@ export const updateTask = async (req, res, next) => {
       }
     });
 
-    if (task.endTime <= task.startTime) {
-      return res.status(400).json({ message: "End time must be after start time" });
+    const timeValidationMessage = validateTaskTimeWindow(task);
+
+    if (timeValidationMessage) {
+      return res.status(400).json({ message: timeValidationMessage });
     }
 
     const conflictingTask = await findOverlappingTask({
