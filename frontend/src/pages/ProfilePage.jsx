@@ -156,7 +156,7 @@ export default function ProfilePage() {
                     strokeWidth="10"
                     strokeLinecap="round"
                     strokeDasharray={ringSize}
-                    strokeDashoffset={ringSize * (1 - score / 100)}
+                    strokeDashoffset={ringSize * (1 - score / 200)}
                   />
                 </svg>
                 <span className="text-xl font-semibold">{score}</span>
@@ -164,7 +164,7 @@ export default function ProfilePage() {
 
               <div>
                 <p className="text-sm text-muted-foreground">Rewards Progress</p>
-                <p className="mt-1 text-2xl font-semibold">{score}/100</p>
+                <p className="mt-1 text-2xl font-semibold">{score}/200</p>
                 <p className="mt-1 text-xs text-muted-foreground">+5 Rewards for each completed task</p>
               </div>
             </div>
@@ -179,9 +179,9 @@ export default function ProfilePage() {
                   <h2 className="font-semibold">Progress</h2>
                   <p className="text-sm text-muted-foreground">Your current Rewards cycle.</p>
                 </div>
-                <p className="text-sm font-semibold text-primary">{score}/100</p>
+                <p className="text-sm font-semibold text-primary">{score}/200</p>
               </div>
-              <Progress value={score} className="h-4" />
+              <Progress value={(score / 200) * 100} className="h-4" />
             </div>
 
             <div className="grid gap-4 sm:grid-cols-3">
@@ -234,7 +234,7 @@ export default function ProfilePage() {
                 <div className="border-b border-border/70 px-4 py-4">
                   <p className="text-sm font-semibold">Pledge</p>
                   <p className="mt-1 text-sm leading-6 text-muted-foreground">
-                    One personal reward for this full 0 to 100 cycle.
+                    One personal reward for this full 0 to 200 cycle.
                   </p>
                 </div>
 
@@ -248,7 +248,7 @@ export default function ProfilePage() {
                         {user.achievementReward}
                       </p>
                       <p className="mt-3 text-xs leading-5 text-muted-foreground">
-                        This becomes editable again after you reach 100 Rewards and the cycle resets to 0.
+                        This becomes editable again after you reach 200 Rewards and the cycle resets to 0.
                       </p>
                     </div>
                   ) : (
@@ -333,14 +333,14 @@ export default function ProfilePage() {
 
             <div className="mx-auto flex w-full max-w-4xl flex-1 flex-col overflow-y-auto px-6 py-10 sm:px-10">
               <div className="mx-auto max-w-3xl text-center">
-                <p className="text-sm uppercase tracking-[0.2em] text-primary/80">100 Rewards cycle</p>
+                <p className="text-sm uppercase tracking-[0.2em] text-primary/80">200 Rewards cycle</p>
                 <h2 className="mt-4 text-lg font-semibold tracking-tight text-foreground sm:text-xl">
                   Write one promise you actually want to keep.
                 </h2>
               </div>
 
               <div className="mx-auto mt-10 w-full max-w-3xl text-center text-base font-medium leading-8 text-muted-foreground sm:text-lg">
-                I pledge that only after completing my tasks and reaching 100 Rewards
+                I pledge that only after completing my tasks and reaching 200 Rewards
               </div>
 
               <div className="mx-auto mt-8 w-full max-w-3xl rounded-3xl bg-background/90 px-6 py-8 shadow-sm">
@@ -388,7 +388,7 @@ export default function ProfilePage() {
             <p className="text-sm uppercase tracking-[0.16em] text-primary/80">Ready for your commit</p>
             <h3 className="text-2xl font-semibold tracking-tight">Lock this pledge in?</h3>
             <p className="text-sm leading-6 text-muted-foreground">
-              After this, you cannot change it until your Rewards cycle reaches 100 and resets.
+              After this, you cannot change it until your Rewards cycle reaches 200 and resets.
             </p>
             <div className="rounded-2xl border bg-background/70 p-4 text-left text-base font-semibold leading-7">
               {reward}

@@ -183,8 +183,8 @@ export const completeTask = async (req, res, next) => {
     const completionDate = task.completedAt.toISOString().slice(0, 10);
 
     const nextScore =
-      process.env.DEMO_FORCE_SCORE_100 === "true" ? 100 : Math.min(100, user.achievementScore + 5);
-    const fullCycleReached = nextScore >= 100;
+      process.env.DEMO_FORCE_SCORE_100 === "true" ? 200 : Math.min(200, user.achievementScore + 5);
+    const fullCycleReached = nextScore >= 200;
 
     user.achievementScore = nextScore;
 

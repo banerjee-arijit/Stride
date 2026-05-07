@@ -117,12 +117,12 @@ export default function DashboardPage() {
                   strokeWidth="10"
                   strokeLinecap="round"
                   strokeDasharray={ringSize}
-                  strokeDashoffset={ringSize * (1 - score / 100)}
+                  strokeDashoffset={ringSize * (1 - score / 200)}
                 />
               </svg>
               <div className="relative text-center">
                 <p className="text-3xl font-semibold">{score}</p>
-                <p className="text-xs text-muted-foreground">of 100</p>
+                <p className="text-xs text-muted-foreground">of 200</p>
               </div>
             </div>
             <div className="mt-5 text-center">
@@ -137,7 +137,7 @@ export default function DashboardPage() {
         <StatCard
           icon={Award}
           label="Rewards"
-          value={`${score}/100`}
+          value={`${score}/200`}
           helper="Your current Rewards cycle"
         />
         <StatCard
@@ -214,7 +214,7 @@ export default function DashboardPage() {
               <div className="mt-6 rounded-lg border bg-muted/40 p-4">
                 <p className="text-sm font-medium">Score Rule</p>
                 <p className="mt-2 text-sm leading-6 text-muted-foreground">
-                  Every completed task gives +5 Rewards. When you hit 100, the cycle resets to 0.
+                  Every completed task gives +5 Rewards. When you hit 200, the cycle resets to 0.
                 </p>
               </div>
             </CardContent>
