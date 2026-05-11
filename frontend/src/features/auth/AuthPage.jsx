@@ -117,6 +117,7 @@ export default function AuthPage() {
                 value={form.email}
                 onChange={handleChange}
                 required
+                autoComplete="email"
                 className="h-12 rounded-lg bg-transparent"
               />
             </div>
@@ -133,6 +134,7 @@ export default function AuthPage() {
                   minLength={6}
                   maxLength={15}
                   required
+                  autoComplete={isLogin ? "current-password" : "new-password"}
                   className="h-12 rounded-lg bg-transparent pr-12"
                 />
                 <button

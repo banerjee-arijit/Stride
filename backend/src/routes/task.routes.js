@@ -30,8 +30,8 @@ router
       body("endTime")
         .matches(/^([01]\d|2[0-3]):[0-5]\d$/)
         .withMessage("End time must be HH:mm")
-        .custom((endTime, { req }) => endTime > req.body.startTime)
-        .withMessage("End time must be after start time"),
+        .custom((endTime, { req }) => endTime !== req.body.startTime)
+        .withMessage("End time cannot be the same as start time"),
       body("taskDate").isISO8601().withMessage("Task date must be a valid date")
     ],
     validate,
@@ -79,9 +79,9 @@ router
       body("endTime").optional().matches(/^([01]\d|2[0-3]):[0-5]\d$/).withMessage("End time must be HH:mm"),
       body("taskDate").optional().isISO8601().withMessage("Task date must be a valid date"),
       body().custom((body) => {
-        if (body.startTime && body.endTime) return body.endTime > body.startTime;
+        if (body.startTime && body.endTime) return body.endTime !== body.startTime;
         return true;
-      }).withMessage("End time must be after start time")
+      }).withMessage("End time cannot be the same as start time")
     ],
     validate,
     updateTask

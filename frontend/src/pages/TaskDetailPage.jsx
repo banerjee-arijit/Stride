@@ -7,7 +7,7 @@ import { Badge } from "../components/ui/badge";
 import { Button } from "../components/ui/button";
 import { DatePicker } from "../components/ui/date-picker";
 import { TimePicker } from "../components/ui/time-picker";
-import { readableDate } from "../lib/utils";
+import { readableDate, calculateDuration } from "../lib/utils";
 
 export default function TaskDetailPage() {
   const { id } = useParams();
@@ -66,7 +66,7 @@ export default function TaskDetailPage() {
         endTime: task.endTime
       });
       setTask(data);
-      toast.success("Task updated");
+      toast.success(`Task updated! Total duration: ${calculateDuration(task.startTime, task.endTime)}`);
     } catch (error) {
       toast.error(error.response?.data?.message || "Could not update task");
     } finally {

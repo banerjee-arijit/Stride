@@ -18,15 +18,40 @@ const buildTaskQuery = (userId, query) => {
 };
 
 const findOverlappingTask = async ({ userId, taskDate, startTime, endTime, excludeTaskId }) => {
-  const conflictQuery = {
-    userId,
-    taskDate,
-    startTime: { $lt: endTime },
-    endTime: { $gt: startTime }
-  };
+  const conflictQuery = { userId, taskDate };
 
   if (excludeTaskId) {
     conflictQuery._id = { $ne: excludeTaskId };
+  }
+
+  if (startTime < endTime) {
+    conflictQuery.$or = [
+      {
+        $expr: { $lt: ["$startTime", "$endTime"] },
+        startTime: { $lt: endTime },
+        endTime: { $gt: startTime }
+      },
+      {
+        $expr: { $gte: ["$startTime", "$endTime"] },
+        $or: [
+          { endTime: { $gt: startTime } },
+          { startTime: { $lt: endTime } }
+        ]
+      }
+    ];
+  } else {
+    conflictQuery.$or = [
+      {
+        $expr: { $lt: ["$startTime", "$endTime"] },
+        $or: [
+          { startTime: { $lt: endTime } },
+          { endTime: { $gt: startTime } }
+        ]
+      },
+      {
+        $expr: { $gte: ["$startTime", "$endTime"] }
+      }
+    ];
   }
 
   return Task.findOne(conflictQuery);
@@ -40,8 +65,8 @@ const getCurrentTimeKey = () => {
 };
 
 const validateTaskTimeWindow = ({ taskDate, startTime, endTime }) => {
-  if (endTime <= startTime) {
-    return "End time must be after start time";
+  if (endTime === startTime) {
+    return "End time cannot be the same as start time";
   }
 
   if (taskDate < todayKey()) {

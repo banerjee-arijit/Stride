@@ -4,11 +4,11 @@ import { toast } from "sonner";
 import { Button } from "../../components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "../../components/ui/card";
 import { DatePicker } from "../../components/ui/date-picker";
-import { Dialog, DialogContent } from "../../components/ui/dialog";
+import { Dialog, DialogContent, DialogDescription, DialogTitle } from "../../components/ui/dialog";
 import { Input } from "../../components/ui/input";
 import { Label } from "../../components/ui/label";
 import { Textarea } from "../../components/ui/textarea";
-import { todayKey } from "../../lib/utils";
+import { todayKey, calculateDuration } from "../../lib/utils";
 import { useTasks } from "../../context/TaskContext";
 
 const pad = (value) => String(value).padStart(2, "0");
@@ -124,8 +124,8 @@ export default function TaskForm({ onCreated }) {
       return;
     }
 
-    if (nextEnd <= nextStart) {
-      setTimeError("End time must be after start time.");
+    if (nextEnd === nextStart) {
+      setTimeError("End time cannot be the same as start time.");
       return;
     }
 
@@ -141,8 +141,8 @@ export default function TaskForm({ onCreated }) {
   const handleSubmit = async (event) => {
     event.preventDefault();
 
-    if (form.endTime <= form.startTime) {
-      toast.error("End time must be after start time");
+    if (form.endTime === form.startTime) {
+      toast.error("End time cannot be the same as start time");
       return;
     }
 
@@ -169,6 +169,7 @@ export default function TaskForm({ onCreated }) {
     setSaving(true);
     try {
       await createTask(form);
+      toast.success(`Task saved! Total duration: ${calculateDuration(form.startTime, form.endTime)}`);
       const nextState = buildInitialState();
       setForm(nextState);
       setStartDraft(toParts(nextState.startTime));
@@ -277,10 +278,10 @@ export default function TaskForm({ onCreated }) {
         <DialogContent className="max-w-2xl overflow-hidden rounded-3xl border bg-card p-0 shadow-soft">
           <div className="border-b bg-gradient-to-br from-primary/10 via-background to-accent/10 px-6 py-6 sm:px-8">
             <p className="text-xs font-semibold uppercase text-primary/80">Time range</p>
-            <h3 className="mt-2 text-2xl font-semibold tracking-tight">Set your task window</h3>
-            <p className="mt-2 text-sm leading-6 text-muted-foreground">
+            <DialogTitle className="mt-2 text-2xl font-semibold tracking-tight">Set your task window</DialogTitle>
+            <DialogDescription className="mt-2 text-sm leading-6 text-muted-foreground">
               Choose a start and end time for this focused block.
-            </p>
+            </DialogDescription>
           </div>
 
           <div className="space-y-5 px-6 py-6 sm:px-8">
@@ -365,11 +366,11 @@ export default function TaskForm({ onCreated }) {
               ))}
             </div>
 
-            <div className="rounded-2xl border bg-muted/30 px-4 py-3 text-sm text-muted-foreground">
-              {form.taskDate === todayKey()
-                ? `For today, start time must be at or after ${formatTimeLabel(currentTimeKey)}.`
-                : "End time must be later than start time."}
-            </div>
+            {form.taskDate === todayKey() && (
+              <div className="rounded-2xl border bg-muted/30 px-4 py-3 text-sm text-muted-foreground">
+                For today, start time must be at or after {formatTimeLabel(currentTimeKey)}.
+              </div>
+            )}
 
             {timeError && (
               <div className="rounded-2xl border border-destructive/20 bg-destructive/10 px-4 py-3 text-sm font-medium text-destructive">
